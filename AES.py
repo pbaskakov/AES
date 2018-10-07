@@ -40,7 +40,7 @@ def key_expansion(key, n): # расширение ключа
             else:
                 t = sub_word(rot_word(key[i-1])) ^ rcon[i//6 - 1]
                 key.append(t ^ key[i-6])
-    else:
+    elif n == 256:
         for i in range(8, 60):
             if i % 8 != 0:
                 if i % 4 != 0:
@@ -170,11 +170,14 @@ mul_table = np.load('mul_table_AES.npy')
 
 if __name__ == '__main__':
     # Пример работы программы #
-    n = 128
+    n = int(input('Enter the key length in bits (128, 192, 256): '))
+    while n not in (128, 192, 256):
+        n = int(input('Please enter the CORRECT key length: '))
     key = keygen(n)
+    print('Automatically generated key:', *['{:08X}'.format(word) for word in key])
     key_expansion(key, n)
     opentext = string_expansion(input('Enter opentext: ').encode('cp1251'))
     ciphertext = encrypt(opentext, key)
-    print('A bytes-like ciphertext:', ciphertext)
+    print(f'A bytes-like ciphertext: {ciphertext}')
     decrypted_text = decrypt(ciphertext, key).decode('cp1251')
-    print('Decrypted text:', decrypted_text)
+    print(f'Decrypted text: {decrypted_text}')
