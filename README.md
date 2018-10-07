@@ -1,5 +1,5 @@
 # AES
-To launch the program, please run AES.py. __Note__: you shoud have installed Python 3.x and a NumPy library.
+To launch the program, please run AES.py. __Note__: you shoud have installed Python 3.6 and a NumPy library.
 
 Description of included files:
 * AES.py - launchable file; contains general functions for encryption and decryption;
