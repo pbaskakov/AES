@@ -9,18 +9,17 @@ def string_expansion(byte_str): # осуществляет расширение 
 
 
 def rot_word(word): # сдвиг слова влево на 1 байт
-    byte_word = '{:08X}'.format(word)
+    byte_word = f'{word:08X}'
     new_word = (byte_word + byte_word[:2])[2:]
     return int(new_word, 16)
 
 
 def sub_word(word): # замена байт в слове по таблице замен
-    byte_word = '{:08X}'.format(word)
-    byte_list = [byte_word[2*i:2*(i+1)] for i in range(4)]
+    byte_word = f'{word:08X}'
+    byte_list = []
     for i in range(4):
-        row, column = map(lambda x: int(x, 16), byte_list[0])
-        byte_list.append('{:02X}'.format(Sbox.sbox[row][column]))
-        byte_list.pop(0)
+        row, column = map(lambda x: int(x, 16), byte_word[2*i:2*(i+1)])
+        byte_list.append(f'{Sbox.sbox[row][column]:02X}')
     return int(''.join(byte_list), 16)
 
 
@@ -52,10 +51,10 @@ def key_expansion(key, n): # расширение ключа
                 key.append(t ^ key[i-8])
 
 
-def add_round_key(block, RoundKey): # сложение с раундовым ключом
+def add_round_key(block, round_key): # сложение с раундовым ключом
     for i in range(4):
         for j in range(4):
-            block[i][j] ^= RoundKey[i][j]
+            block[i][j] ^= round_key[i][j]
 
             
 def get_input_block(byte_str, i): # получение входного блока
@@ -72,7 +71,7 @@ def get_input_block(byte_str, i): # получение входного блок
 def sub_bytes(block): # замена байт в блоке по таблице замен
     for i in range(4):
         for j in range(4):
-            row, column = map(lambda x: int(x, 16), '{:02X}'.format(block[i][j]))
+            row, column = map(lambda x: int(x, 16), f'{block[i][j]:02X}')
             block[i][j] = Sbox.sbox[row][column]
 
 
@@ -84,7 +83,7 @@ def shift_rows(block): # сдвиг строк блока
 
 def mix_columns(block): # перемешивание столбцов
     for j in range(4):
-        s = [block[i][j] for i in range(4)]
+        s = tuple(block[i][j] for i in range(4))
         block[0][j] = mul_table[2, s[0]] ^ mul_table[3, s[1]] ^ s[2] ^ s[3]
         block[1][j] = s[0] ^ mul_table[2, s[1]] ^ mul_table[3, s[2]] ^ s[3]
         block[2][j] = s[0] ^ s[1] ^ mul_table[2, s[2]] ^ mul_table[3, s[3]]
@@ -92,12 +91,12 @@ def mix_columns(block): # перемешивание столбцов
 
 
 def get_round_key(key, round): # получение раундового ключа
-    RoundKey = []
-    words = ['{:08X}'.format(key[i]) for i in range(4*round, 4*(round+1))]
+    round_key = []
+    words = tuple(f'{key[i]:08X}' for i in range(4*round, 4*(round+1)))
     for i in range(4):
         new_line = [int(word[2*i : 2*(i+1)], 16) for word in words]
-        RoundKey.append(new_line)
-    return RoundKey
+        round_key.append(new_line)
+    return round_key
 
 
 def inv_shift_rows(block): # сдвиг строк state вправо
@@ -109,13 +108,13 @@ def inv_shift_rows(block): # сдвиг строк state вправо
 def inv_sub_bytes(block): # замена байт по инвертированной таблице замен
     for i in range(4):
         for j in range(4):
-            row, column = map(lambda x: int(x, 16), '{:02X}'.format(block[i][j]))
+            row, column = map(lambda x: int(x, 16), f'{block[i][j]:02X}')
             block[i][j] = InvSbox.inv_sbox[row][column]
 
 
 def inv_mix_columns(block): # перемешивание столбцов
     for j in range(4):
-        s = [block[i][j] for i in range(4)]
+        s = tuple(block[i][j] for i in range(4))
         block[0][j] = mul_table[0x0e, s[0]] ^ mul_table[0x0b, s[1]] ^ mul_table[0x0d, s[2]] ^ mul_table[0x09, s[3]]
         block[1][j] = mul_table[0x09, s[0]] ^ mul_table[0x0e, s[1]] ^ mul_table[0x0b, s[2]] ^ mul_table[0x0d, s[3]]
         block[2][j] = mul_table[0x0d, s[0]] ^ mul_table[0x09, s[1]] ^ mul_table[0x0e, s[2]] ^ mul_table[0x0b, s[3]]
